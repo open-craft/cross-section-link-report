@@ -1,12 +1,13 @@
 from datetime import datetime
+import grequests
 from jinja2 import Environment, FileSystemLoader
 import os
-import requests
 from .config import (
     LMS_URL,
     STUDIO_URL,
     INSTANCE_NAME,
-    REPORT_PATH
+    REPORT_PATH,
+    REQUEST_BATCH_SIZE
 )
 from .classes import (
     Course,
@@ -21,8 +22,8 @@ def fetch_all_course_blocks(course: Course, cookie_jar):
     '''
     fetch_blocks_url = f"{course.blocks_url}&all_blocks=true&depth=all&requested_fields=children"
 
-    print(f"Fetching all blocks of course {course}")
-    r = requests.get(fetch_blocks_url, cookies=cookie_jar)
+    reqs = [grequests.get(fetch_blocks_url, cookies=cookie_jar)]
+    r = grequests.map(reqs)[0]
     
     blocks = r.json().get('blocks')
 
@@ -39,7 +40,8 @@ def fetch_all_active_courses(cookie_jar):
     active_courses = []
 
     print("Fetching list of all courses")
-    r = requests.get(FETCH_ALL_COURSES_URL, cookies=cookie_jar)
+    reqs = [grequests.get(FETCH_ALL_COURSES_URL, cookies=cookie_jar)]
+    r = grequests.map(reqs)[0]
     
     courses = r.json().get('results')
     today = datetime.now()
@@ -62,15 +64,19 @@ def fetch_all_active_courses(cookie_jar):
     return active_courses
 
 def fetch_block_data(cookie_jar, course: Course):
+    reqs = []
     block_count = 1
     for usage_key in course.blocks:
         block = course.blocks[usage_key]
         block_data_url = f"{STUDIO_URL}/xblock/{block.usage_key}"
         headers = {"Accept": "application/json, text/plain, */*"}
+        reqs.append(grequests.get(block_data_url, cookies=cookie_jar, headers=headers, hooks={'response': _handle_block_data(block)}))
+        block_count += 1
+    # Requests sent in batches to prevent rate limiting
+    grequests.map(reqs, size=REQUEST_BATCH_SIZE)
 
-        print(f"Fetching xblock data for course {course.id} : {block_count}/{len(course.blocks)}")
-        r = requests.get(block_data_url, cookies=cookie_jar, headers=headers)
-        
+def _handle_block_data(block):
+    def response_hook(r, *args, **kwargs):
         try:
             block_studio_url = r.json().get('studio_url', None)
             if block_studio_url:
@@ -79,8 +85,8 @@ def fetch_block_data(cookie_jar, course: Course):
             block.data = r.text
         finally:
             block.data = r.text
-
-        block_count += 1
+        return r
+    return response_hook
 
 def generate_report(courses):
     print("Generating Report")

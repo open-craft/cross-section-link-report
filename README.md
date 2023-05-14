@@ -11,3 +11,6 @@ pip install -r requirement.txt
 python ./generate_report.py
 ```
 4. If script runs succesfully, a report file called `report.html` should be generated in the report path configured in the configs.
+
+> **Note**
+> To speed up the process of fetching xblock data, we batch the requests and fire them simultaneously. You can optimize the batch size using the REQUEST_BATCH_SIZE config to speed up the process or to prevent rate-limiting

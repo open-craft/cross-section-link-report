@@ -1,4 +1,4 @@
-import requests
+import grequests
 from requests.cookies import merge_cookies
 from .config import (
     LMS_URL,
@@ -14,7 +14,8 @@ def _fetch_session_cookies_for_login():
     Fetch some cookies such as csrf token required for login_session call
     '''
     print("Fetching session cookies for login")
-    r = requests.get(LOGIN_URL)
+    reqs = [grequests.get(LOGIN_URL)]
+    r = grequests.map(reqs)[0]
     return r.cookies
 
 def login_to_lms():
@@ -29,8 +30,8 @@ def login_to_lms():
     headers = {'Referer': LOGIN_URL, 'X-CSRFToken': cookie_jar['csrftoken'], 'X-Requested-With': 'XMLHttpRequest'}
 
     print("Logging in using staff credentials")
-    r = requests.post(LOGIN_SESSION_URL, cookies=cookie_jar, data=auth_creds, headers=headers)
-    
+    reqs = [grequests.post(LOGIN_SESSION_URL, cookies=cookie_jar, data=auth_creds, headers=headers)]
+    r = grequests.map(reqs)[0]
     cookie_jar = merge_cookies(cookie_jar, r.cookies)
 
     return cookie_jar

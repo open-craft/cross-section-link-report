@@ -8,3 +8,5 @@ STUDIO_URL: https://studio.testsandbox.example.com
 # Global Staff credentials
 STAFF_EMAIL: edx@example.com
 STAFF_PASSWORD: edx
+
+REQUEST_BATCH_SIZE: 10
