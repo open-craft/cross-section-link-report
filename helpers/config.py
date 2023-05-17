@@ -1,12 +1,6 @@
-import yaml
-import os
+from django.conf import settings
 
-config_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
+LMS_URL = settings.LMS_ROOT_URL
+STUDIO_URL = f"http{'s' if settings.HTTPS == 'on' else ''}://{settings.CMS_BASE}"
 
-with open(f'{config_dir}/config.yml') as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
-
-LMS_URL = config['LMS_URL']
-STUDIO_URL = config['STUDIO_URL']
-
-INSTANCE_NAME = config['INSTANCE_NAME']
+INSTANCE_NAME = settings.SITE_NAME

@@ -1,5 +1,9 @@
 import re
-from openedx.core.lib.xblock_serializer.api import serialize_xblock_to_olx
+try:
+    from openedx.core.lib.xblock_serializer.api import serialize_xblock_to_olx
+except ModuleNotFoundError:
+    # This can be removed in Quince.
+    from openedx.core.djangoapps.olx_rest_api.block_serializer import XBlockSerializer as serialize_xblock_to_olx
 from helpers.config import (
     LMS_URL,
     STUDIO_URL,
@@ -20,7 +24,14 @@ class Block:
         self.parent = parent
         self.data = ''
         if block_obj.category not in ['chapter', 'sequential', 'vertical']:
-            self.data = serialize_xblock_to_olx(block_obj).olx_str
+            # We want to get the olx for all the XBlocks, but sometimes there might be
+            # exceptions while serializing. In this case, we fallback to the `data` property
+            # Using the data property is not ideal since all XBlocks do not implement this,
+            # but it should cover the most important once like html and problem XBlocks.
+            try:
+                self.data = serialize_xblock_to_olx(block_obj).olx_str
+            except:
+                self.data = block_obj.data
 
     def __repr__(self) -> str:
         return f"{self.display_name} : {self.usage_key}"
@@ -47,7 +58,7 @@ class Block:
 
             for link in list_of_links:
                 # If link has /jump_to_id/ its an internal link
-                if re.search('\/jump_to_id\/', link):
+                if re.search(r'/jump_to_id/', link):
                     jump_to_list.add(link.split('/')[2].split('\\')[0])
 
                 # If link has the lms url in it then its a link to other courses

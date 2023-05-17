@@ -10,14 +10,14 @@ from .classes import (
     Block
 )
 
-def populate_block_heirarchy(block, course: Course):
+def populate_block_hierarchy(block, course: Course):
     for child in block.obj.get_children():
         parent = None
         if block != course:
             parent = block
         block = Block(child, parent)
         course.add_block(block)
-        populate_block_heirarchy(block, course)
+        populate_block_hierarchy(block, course)
 
 def generate_html_report(courses):
     print("Generating Report")

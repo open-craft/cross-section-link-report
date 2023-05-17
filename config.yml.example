@@ -1,6 +1,0 @@
-# Instance or client name to be used a report header
-INSTANCE_NAME: Test Sandbox
-
-LMS_URL: https://testsandbox.example.com
-STUDIO_URL: https://studio.testsandbox.example.com
-
