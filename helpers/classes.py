@@ -1,4 +1,5 @@
 import re
+from bs4 import BeautifulSoup
 try:
     from openedx.core.lib.xblock_serializer.api import serialize_xblock_to_olx
 except ModuleNotFoundError:
@@ -53,21 +54,22 @@ class Block:
         other_course_list = set()
         external_list = set()
         if self.data:
+            soup = BeautifulSoup(self.data, features="lxml")
             # Find all strings starting with `href=` and discard the `href="`
-            list_of_links = [link.split('"')[1] for link in re.findall('href=.+?(?=\\">)', self.data)]
+            list_of_links = [link['href'] for link in soup.find_all('a')]
 
             for link in list_of_links:
                 # If link has /jump_to_id/ its an internal link
                 if re.search(r'/jump_to_id/', link):
-                    jump_to_list.add(link.split('/')[2].split('\\')[0])
+                    jump_to_list.add(link.split('/')[2])
 
                 # If link has the lms url in it then its a link to other courses
                 elif re.search(LMS_URL, link):
-                    other_course_list.add(link.split('\\')[0])
+                    other_course_list.add(link)
 
                 # All other links starting with http are external links
                 elif link.startswith('http'):
-                    external_list.add(link.split('\\')[0])
+                    external_list.add(link)
 
         return (jump_to_list, other_course_list, external_list)
 
