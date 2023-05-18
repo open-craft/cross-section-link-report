@@ -41,6 +41,7 @@
         <span class="course_info">URL: <a href="{{ course.url }}">{{ course.url }}</a></span>
         <span class="course_info">Total no. of links : <b>{{ course.total_links }}</b></span>
         <span class="course_info">Cross section links : <b>{{ course.jump_pair_count }} ({{ course.jump_pair_percentage }})</b></span>
+        <span class="course_info">Internal links <b>{{ course.internal_link_count }} ({{ course.internal_link_percentage }})</b></span>
         <span class="course_info">Other Courses links : <b>{{ course.other_course_link_count }} ({{ course.other_course_link_percentage }})</b></span>
         <span class="course_info">External links <b>{{ course.external_link_count }} ({{ course.external_link_percentage }})</b></span>
         {% if course.jump_pairs|length > 0 %}
@@ -54,6 +55,22 @@
             <tr>
                 <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{ jump_pair.jump_from.get_studio_url() }}</a>)</td>
                 <td>{{ jump_pair.jump_to }} (<a href="{{ jump_pair.jump_to.get_studio_url() }}">{{ jump_pair.jump_to.get_studio_url() }}</a>)</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        {% if course.internal_links|length > 0 %}
+        <h3 class="table_header">Internl links : </h3>
+        <table>
+            <tr>
+                <td>From</td>
+                <td>To</td>
+            </tr>
+            {% for jump_pair in course.internal_links %}
+            <tr>
+                <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{ jump_pair.jump_from.get_studio_url() }}</a>)</td>
+                <td><a href="{{ jump_pair.jump_to }}">{{ jump_pair.jump_to }}</a></td>
             </tr>
             {% endfor %}
         </table>

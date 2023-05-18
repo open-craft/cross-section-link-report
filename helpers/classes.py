@@ -49,8 +49,9 @@ class Block:
         else:
             return None
         
-    def get_lists_of_links(self):
+    def get_lists_of_links(self, course):
         jump_to_list = set()
+        internal_list = set()
         other_course_list = set()
         external_list = set()
         if self.data:
@@ -59,19 +60,22 @@ class Block:
             list_of_links = [link['href'] for link in soup.find_all('a')]
 
             for link in list_of_links:
+                # Find all links starting with LMS_URL
+                if LMS_URL in link:
+                    # Links internal to the course have the course id
+                    if course.id in link:
+                        internal_list.add(link)
+                    # Links to other courses in the instance
+                    else:
+                        other_course_list.add(link)
                 # If link has /jump_to_id/ its an internal link
-                if re.search(r'/jump_to_id/', link):
+                elif r'/jump_to_id/' in link:
                     jump_to_list.add(link.split('/')[2])
-
-                # If link has the lms url in it then its a link to other courses
-                elif re.search(LMS_URL, link):
-                    other_course_list.add(link)
-
                 # All other links starting with http are external links
                 elif link.startswith('http'):
                     external_list.add(link)
 
-        return (jump_to_list, other_course_list, external_list)
+        return (jump_to_list, internal_list, other_course_list, external_list)
 
 class Course:
     '''
@@ -85,6 +89,7 @@ class Course:
         self.blocks = {}
         self.block_id_map = {}
         self.jump_pairs = []
+        self.internal_links = []
         self.other_courses = []
         self.external_links = []
 
@@ -93,7 +98,7 @@ class Course:
     
     @property
     def total_links(self):
-        return self.jump_pair_count + self.external_link_count + self.other_course_link_count
+        return self.jump_pair_count + self.internal_link_count + self.external_link_count + self.other_course_link_count
     
     @property
     def jump_pair_count(self):
@@ -102,6 +107,14 @@ class Course:
     @property
     def jump_pair_percentage(self):
         return self.find_percentage(self.jump_pair_count)
+    
+    @property
+    def internal_link_count(self):
+        return len(self.internal_links)
+    
+    @property
+    def internal_link_percentage(self):
+        return self.find_percentage(self.internal_link_count)
     
     @property
     def external_link_count(self):
@@ -130,12 +143,16 @@ class Course:
     def find_links_in_blocks(self):
         for key in self.blocks:
             block = self.blocks.get(key)
-            (jump_to_list, other_course_list, external_list) = block.get_lists_of_links()
+            (jump_to_list, internal_list, other_course_list, external_list) = block.get_lists_of_links(self)
             if jump_to_list:
                 for jump in jump_to_list:
                     jump_to_block = self.block_id_map.get(jump, None)
                     if jump_to_block:
                         self.jump_pairs.append(JumpToPair(block, jump_to_block))
+
+            if internal_list:
+                for link in internal_list:
+                    self.internal_links.append(JumpToPair(block, link))
 
             if other_course_list:
                 for link in other_course_list:
