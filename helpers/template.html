@@ -7,14 +7,8 @@
         margin-top: 0.7em;
     }
 
-    .table_header{
+    .table_header {
         margin-top: 2.5em;
-    }
-
-    table {
-        font-family: arial, sans-serif;
-        border-collapse: collapse;
-        width: 100%;
     }
 
     td,
@@ -27,89 +21,148 @@
     tr:nth-child(even) {
         background-color: #dddddd;
     }
+
+    .link_table {
+        font-family: Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 95%;
+        table-layout: fixed;
+        border: solid black 1px;
+        border-radius: 6px;
+    }
+
+    .link_table td,
+    .link_table th {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .link_table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .link_table tr:hover {
+        background-color: #ddd;
+    }
+
+    .link_table th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #0075B4;
+        color: white;
+    }
+
+    #course_container div:nth-child(odd){
+        background-color: #f2f2f2;
+    }
+
+    #course_container div:nth-child(even){
+        background-color: #E2DFEB;
+    }
+
+    .course{
+        padding-top: 2em;
+        padding-bottom: 4em;
+    }
 </style>
 
 <body>
     <div id="header">
-        <h1>Report for {{ instance_data.instance_name }}</h1>
+        <h1>Report on Cross sectional links</h1>
+        <h3>Site Name: {{ instance_data.instance_name }}</h3>
         <h3>LMS URL: <a href="{{ instance_data.lms_url }}">{{ instance_data.lms_url }}</a></h3>
         <h3>Studio URL: <a href="{{ instance_data.cms_url }}">{{ instance_data.cms_url }}</a></h3>
     </div>
-    {% for course in courses %}
-    <div id="course" style="margin-top: 4em;">
-        <span style="font-size: 1.5em;">Course: <b>{{ course }}</b></span>
-        <span class="course_info">URL: <a href="{{ course.url }}">{{ course.url }}</a></span>
-        <span class="course_info">Total no. of links : <b>{{ course.total_links }}</b></span>
-        <span class="course_info">Cross section links : <b>{{ course.jump_pair_count }} ({{ course.jump_pair_percentage }})</b></span>
-        <span class="course_info">Internal links <b>{{ course.internal_link_count }} ({{ course.internal_link_percentage }})</b></span>
-        <span class="course_info">Other Courses links : <b>{{ course.other_course_link_count }} ({{ course.other_course_link_percentage }})</b></span>
-        <span class="course_info">External links <b>{{ course.external_link_count }} ({{ course.external_link_percentage }})</b></span>
-        {% if course.jump_pairs|length > 0 %}
-        <h3 class="table_header">Cross Section link pairs : </h3>
-        <table>
-            <tr>
-                <td>From</td>
-                <td>To</td>
-            </tr>
-            {% for jump_pair in course.jump_pairs %}
-            <tr>
-                <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{ jump_pair.jump_from.get_studio_url() }}</a>)</td>
-                <td>{{ jump_pair.jump_to }} (<a href="{{ jump_pair.jump_to.get_studio_url() }}">{{ jump_pair.jump_to.get_studio_url() }}</a>)</td>
-            </tr>
-            {% endfor %}
-        </table>
-        {% endif %}
+    <div id="course_container">
+        {% for course in courses %}
+        <div class="course">
+            <span style="font-size: 1.5em;">Course: <b>{{ course }}</b></span>
+            <span class="course_info">URL: <a href="{{ course.url }}">{{ course.url }}</a></span>
+            <span class="course_info">Total no. of links : <b>{{ course.total_links }}</b></span>
+            <span class="course_info">Cross section links : <b>{{ course.jump_pair_count }} ({{
+                    course.jump_pair_percentage
+                    }})</b></span>
+            <span class="course_info">Internal links <b>{{ course.internal_link_count }} ({{
+                    course.internal_link_percentage
+                    }})</b></span>
+            <span class="course_info">Other Courses links : <b>{{ course.other_course_link_count }} ({{
+                    course.other_course_link_percentage }})</b></span>
+            <span class="course_info">External links <b>{{ course.external_link_count }} ({{
+                    course.external_link_percentage
+                    }})</b></span>
+            {% if course.jump_pairs|length > 0 %}
+            <h3 class="table_header">Cross Section link pairs : </h3>
+            <table class="link_table">
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                </tr>
+                {% for jump_pair in course.jump_pairs %}
+                <tr>
+                    <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{
+                            jump_pair.jump_from.get_studio_url() }}</a>)</td>
+                    <td>{{ jump_pair.jump_to }} (<a href="{{ jump_pair.jump_to.get_studio_url() }}">{{
+                            jump_pair.jump_to.get_studio_url() }}</a>)</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
 
-        {% if course.internal_links|length > 0 %}
-        <h3 class="table_header">Internl links : </h3>
-        <table>
-            <tr>
-                <td>From</td>
-                <td>To</td>
-            </tr>
-            {% for jump_pair in course.internal_links %}
-            <tr>
-                <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{ jump_pair.jump_from.get_studio_url() }}</a>)</td>
-                <td><a href="{{ jump_pair.jump_to }}">{{ jump_pair.jump_to }}</a></td>
-            </tr>
-            {% endfor %}
-        </table>
-        {% endif %}
+            {% if course.internal_links|length > 0 %}
+            <h3 class="table_header">Internl links : </h3>
+            <table class="link_table">
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                </tr>
+                {% for jump_pair in course.internal_links %}
+                <tr>
+                    <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{
+                            jump_pair.jump_from.get_studio_url() }}</a>)</td>
+                    <td><a href="{{ jump_pair.jump_to }}">{{ jump_pair.jump_to }}</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
 
-        {% if course.other_courses|length > 0 %}
-        <h3 class="table_header">Other Course links : </h3>
-        <table>
-            <tr>
-                <td>From</td>
-                <td>To</td>
-            </tr>
-            {% for jump_pair in course.other_courses %}
-            <tr>
-                <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{ jump_pair.jump_from.get_studio_url() }}</a>)</td>
-                <td><a href="{{ jump_pair.jump_to }}">{{ jump_pair.jump_to }}</a></td>
-            </tr>
-            {% endfor %}
-        </table>
-        {% endif %}
+            {% if course.other_courses|length > 0 %}
+            <h3 class="table_header">Other Course links : </h3>
+            <table class="link_table">
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                </tr>
+                {% for jump_pair in course.other_courses %}
+                <tr>
+                    <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{
+                            jump_pair.jump_from.get_studio_url() }}</a>)</td>
+                    <td><a href="{{ jump_pair.jump_to }}">{{ jump_pair.jump_to }}</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
 
-        {% if course.external_links|length > 0 %}
-        <h3 class="table_header">External links : </h3>
-        <table>
-            <tr>
-                <td>From</td>
-                <td>To</td>
-            </tr>
-            {% for jump_pair in course.external_links %}
-            <tr>
-                <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{ jump_pair.jump_from.get_studio_url() }}</a>)</td>
-                <td><a href="{{ jump_pair.jump_to }}">{{ jump_pair.jump_to }}</a></td>
-            </tr>
-            {% endfor %}
-        </table>
-        {% endif %}
+            {% if course.external_links|length > 0 %}
+            <h3 class="table_header">External links : </h3>
+            <table class="link_table">
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                </tr>
+                {% for jump_pair in course.external_links %}
+                <tr>
+                    <td>{{ jump_pair.jump_from }} (<a href="{{ jump_pair.jump_from.get_studio_url() }}">{{
+                            jump_pair.jump_from.get_studio_url() }}</a>)</td>
+                    <td><a href="{{ jump_pair.jump_to }}">{{ jump_pair.jump_to }}</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
 
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </body>
 
 </html>
