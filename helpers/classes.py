@@ -1,13 +1,14 @@
 import re
-from bs4 import BeautifulSoup
+import html
 try:
     from openedx.core.lib.xblock_serializer.api import serialize_xblock_to_olx
 except ModuleNotFoundError:
     # This can be removed in Quince.
     from openedx.core.djangoapps.olx_rest_api.block_serializer import XBlockSerializer as serialize_xblock_to_olx
 from helpers.config import (
-    LMS_URL,
+    LMS_BASE_URL,
     STUDIO_URL,
+    HTTPS
 )
 
 class Block:
@@ -30,7 +31,7 @@ class Block:
             # Using the data property is not ideal since all XBlocks do not implement this,
             # but it should cover the most important once like html and problem XBlocks.
             try:
-                self.data = serialize_xblock_to_olx(block_obj).olx_str
+                self.data = html.unescape(serialize_xblock_to_olx(block_obj).olx_str)
             except:
                 self.data = block_obj.data
 
@@ -55,13 +56,13 @@ class Block:
         other_course_list = set()
         external_list = set()
         if self.data:
-            soup = BeautifulSoup(self.data, features="lxml")
             # Find all strings starting with `href=` and discard the `href="`
-            list_of_links = [link['href'] for link in soup.find_all('a')]
+            list_of_links = [link.split('"')[1] for link in re.findall('href=.+?(?=\\">)', self.data)]
 
             for link in list_of_links:
-                # Find all links starting with LMS_URL
-                if LMS_URL in link:
+                # Find all links starting with LMS_BASE_URL
+                if LMS_BASE_URL in link:
+                    link = self.get_link_with_protocol(link)
                     # Links internal to the course have the course id
                     if course.id in link:
                         internal_list.add(link)
@@ -72,10 +73,16 @@ class Block:
                 elif r'/jump_to_id/' in link:
                     jump_to_list.add(link.split('/')[2])
                 # All other links starting with http are external links
-                elif link.startswith('http'):
+                elif link.startswith('http') or link.startswith('//'):
+                    self.get_link_with_protocol(link)
                     external_list.add(link)
 
         return (jump_to_list, internal_list, other_course_list, external_list)
+    
+    def get_link_with_protocol(self, link):
+        if link.startswith('//'):
+            link = f"http{'s' if HTTPS else ''}:{link}"
+        return link
 
 class Course:
     '''
