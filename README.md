@@ -17,6 +17,6 @@ EOF
 
 >**Note**
 >The `edxapp` user with the correct environment (usually `edxapp_env`) is required in most Open edX installations to setup and run this script.
->However, in some installations the `www-data` user might also be required to run the script depending on the directory being used
+>However, in some installations the script might need to be run using `www-data` user depending on the directory being used
 
 3. If script runs succesfully, a report file called `/tmp/report.html` should be generated.
