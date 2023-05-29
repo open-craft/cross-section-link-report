@@ -31,7 +31,7 @@ class Block:
             # Using the data property is not ideal since all XBlocks do not implement this,
             # but it should cover the most important once like html and problem XBlocks.
             try:
-                self.data = html.unescape(serialize_xblock_to_olx(block_obj).olx_str)
+                self.data = html.unescape(serialize_xblock_to_olx(block_obj).olx_str).replace('\\','')
             except:
                 self.data = block_obj.data
 
@@ -57,7 +57,7 @@ class Block:
         external_list = set()
         if self.data:
             # Find all strings starting with `href=` and discard the `href="`
-            list_of_links = [link.split('"')[1] for link in re.findall('href=.+?(?=\\">)', self.data)]
+            list_of_links = [link.split('"')[1] for link in re.findall('href=.+?(?=">)', self.data)]
 
             for link in list_of_links:
                 # Find all links starting with LMS_BASE_URL

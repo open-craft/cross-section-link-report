@@ -6,7 +6,6 @@ Script to generate report about the cross sectional links used in course
 export SCRIPT_DIR='/edx/app/edxapp/script'
 git clone https://github.com/open-craft/cross-section-link-report.git  $SCRIPT_DIR/cross-section-link-report
 cd $SCRIPT_DIR/cross-section-link-report/
-git checkout kaustav/report_through_modulestore
 ```
 2. Run script with the correct environment set:
 ```
@@ -15,4 +14,9 @@ from generate_report import generate_report
 generate_report()
 EOF
 ```
+
+>**Note**
+>The `edxapp` user with the correct environment (usually `edxapp_env`) is required in most Open edX installations to setup and run this script.
+>However, in some installations the `www-data` user might also be required to run the script depending on the directory being used
+
 3. If script runs succesfully, a report file called `/tmp/report.html` should be generated.
